@@ -1,12 +1,13 @@
 package controllers
 
 import (
-	"bookingapp/db"
-	"bookingapp/helper"
-	"bookingapp/models"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/martinyonathann/bookingapp/db"
+	"github.com/martinyonathann/bookingapp/helper"
+	"github.com/martinyonathann/bookingapp/models"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"

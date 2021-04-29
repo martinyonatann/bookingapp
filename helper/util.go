@@ -1,7 +1,7 @@
 package helper
 
 import (
-	"bookingapp/models"
+	"github.com/martinyonathann/bookingapp/models"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
