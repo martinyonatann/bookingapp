@@ -1,1 +1,1 @@
-echo "web: bookingapp"
+web: bookingapp
