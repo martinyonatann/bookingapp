@@ -7,9 +7,9 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-func DateTime() string {
+func DateTime(format string) string {
 	currentTime := time.Now()
-	result := currentTime.Format("2006-01-02 15:04:05") //yyyy-mm-dd HH:mm:ss
+	result := currentTime.Format(format) //"2006-01-02 15:04:05"
 	return result
 }
 
@@ -18,7 +18,7 @@ func JwtGenerator(username, key string) string {
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["username"] = username
-	claims["exp"] = time.Now().Add(time.Minute * 15).Unix()
+	claims["dateCreated"] = DateTime("2006-01-02")
 
 	tokenString, err := token.SignedString([]byte(key))
 	if err != nil {

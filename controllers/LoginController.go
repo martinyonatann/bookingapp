@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/gomodule/redigo/redis"
 	"github.com/martinyonathann/bookingapp/db"
 	"github.com/martinyonathann/bookingapp/helper"
 	"github.com/martinyonathann/bookingapp/models"
@@ -17,8 +18,8 @@ import (
 
 const (
 	QUERY_COUNT_REGISTRATION  = "SELECT COUNT(*) FROM users WHERE username = $1;"
-	QUERY_INSERT_REGISTRATION = "INSERT INTO users(username, first_name, last_name, password, token, date_created) VALUES ($1, $2, $3, $4, $5, $6);"
-	QUERY_SELECT_LOGIN        = "SELECT username, first_name, last_name, password, token, date_created FROM users WHERE username = $1"
+	QUERY_INSERT_REGISTRATION = "INSERT INTO users(username, first_name, last_name, password, date_created) VALUES ($1, $2, $3, $4, $5) RETURNING user_id;"
+	QUERY_SELECT_LOGIN        = "SELECT username, first_name, last_name, password, date_created FROM users WHERE username = $1"
 )
 
 func Registration(c echo.Context) error {
@@ -53,26 +54,22 @@ func Registration(c echo.Context) error {
 	}
 
 	user.Password = string(hash)
-	user.DateCreated = helper.DateTime()
-	user.Token = helper.JwtGenerator(user.Username, "secretkey")
+	user.DateCreated = helper.DateTime("2006-01-02 15:04:05")
 
-	stmt, err := DB.Prepare(QUERY_INSERT_REGISTRATION)
-	if err != nil {
-		resp := c.JSON(http.StatusInternalServerError, helper.ErrorLog(http.StatusInternalServerError, "Error when prepare statement : "+err.Error(), "EXT_REF"))
-		return resp
-	}
+	// stmt, err := DB.Prepare(QUERY_INSERT_REGISTRATION)
+	// if err != nil {
+	// 	resp := c.JSON(http.StatusInternalServerError, helper.ErrorLog(http.StatusInternalServerError, "Error when prepare statement : "+err.Error(), "EXT_REF"))
+	// 	return resp
+	// }
+	err = DB.QueryRow(QUERY_INSERT_REGISTRATION, user.Username, user.Firstname, user.Lastname, user.Password, user.DateCreated).Scan(&user.UserId)
 
-	_, err = stmt.Exec(user.Username, user.Firstname, user.Lastname, user.Password, user.Token, user.DateCreated)
 	if err != nil {
 		log.Error(err)
 		resp := c.JSON(http.StatusInternalServerError, helper.ErrorLog(http.StatusInternalServerError, "Error when execute statement : "+err.Error(), "EXT_REF"))
 		return resp
 	}
 
-	// //logging needed
-	// b, _ := json.Marshal(user)
-	// fmt.Print("response : ", string(b))
-
+	user.Password = ""
 	resp := c.JSON(http.StatusOK, user)
 	log.Info()
 	return resp
@@ -92,13 +89,15 @@ func LoginController(c echo.Context) error {
 	DB := db.DB()
 	sqlStatement := QUERY_SELECT_LOGIN
 
-	err = DB.QueryRow(sqlStatement, user.Username).Scan(&result.Username, &result.Firstname, &result.Lastname, &result.Password, &result.Token, &result.DateCreated)
+	//Validate username
+	err = DB.QueryRow(sqlStatement, user.Username).Scan(&result.Username, &result.Firstname, &result.Lastname, &result.Password, &result.DateCreated)
 	if err != nil {
 		log.Error(err)
 		resp := c.JSON(http.StatusInternalServerError, helper.ErrorLog(http.StatusInternalServerError, "Invalid Username", "EXT_REF"))
 		return resp
 	}
 
+	//Hashing and compare password
 	err = bcrypt.CompareHashAndPassword([]byte(result.Password), []byte(user.Password))
 	if err != nil {
 		log.Error("Invalid Password :", err)
@@ -107,10 +106,22 @@ func LoginController(c echo.Context) error {
 	}
 
 	result.Token = helper.JwtGenerator(result.Username, "secret")
+	result.Password = ""
 
-	// //logging needed
-	// b, _ := json.Marshal(result)
-	// fmt.Print("response : ", string(b))
+	//Redis
+	var cacheName string = result.Username + helper.DateTime("2006-01-02")
+	conn, err := redis.Dial("tcp", "localhost:6379")
+
+	if err != nil {
+		log.Error("Error when connect redis :", err)
+		resp := c.JSON(http.StatusInternalServerError, helper.ErrorLog(http.StatusInternalServerError, "Error when connect redis", "EXT_REF"))
+		return resp
+	}
+	jsonData, _ := json.Marshal(&result)
+	_, err = conn.Do("SET", cacheName, string(jsonData))
+	if err != nil {
+		log.Panic(err)
+	}
 
 	//resp
 	resp := c.JSON(http.StatusOK, result)
@@ -128,9 +139,29 @@ func ProfileHandler(c echo.Context) error {
 
 	var result models.Users
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		result.Username = claims["username"].(string)
-		result.Firstname = claims["firstname"].(string)
-		result.Lastname = claims["lastname"].(string)
+		//Connection to redis for get data user.
+		var cacheName string = claims["username"].(string) + helper.DateTime("2006-01-02")
+		conn, err := redis.Dial("tcp", "localhost:6379")
+		if err != nil {
+			log.Error("Error when connect redis :", err)
+			resp := c.JSON(http.StatusInternalServerError, helper.ErrorLog(http.StatusInternalServerError, "Error when connect redis", "EXT_REF"))
+			return resp
+		}
+
+		//Get data from cache
+		reply, err := redis.Bytes(conn.Do("GET", cacheName))
+		if err != nil {
+			log.Error("Error when get data redis :", err)
+			resp := c.JSON(http.StatusInternalServerError, helper.ErrorLog(http.StatusInternalServerError, "Error when get data redis", "EXT_REF"))
+			return resp
+		}
+		//Umarshal data redis to model result.
+		err = json.Unmarshal(reply, &result)
+		if err != nil {
+			log.Error("error when Unmarshal data cache", err.Error())
+			resp := c.JSON(http.StatusInternalServerError, helper.ErrorLog(http.StatusInternalServerError, "error when Unmarshal data cache", "EXT_REF"))
+			return resp
+		}
 
 		log.Info()
 		resp := c.JSON(http.StatusOK, result)
