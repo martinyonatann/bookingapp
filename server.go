@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/martinyonathann/bookingapp/controllers"
@@ -26,8 +27,10 @@ func main() {
 	e.POST("/registration", controllers.Registration)
 	e.GET("/profil", controllers.ProfileHandler)
 
+	port := os.Getenv("PORT")
+
 	s := &http.Server{
-		Addr:         ":1323",
+		Addr:         port,
 		ReadTimeout:  20 * time.Minute,
 		WriteTimeout: 20 * time.Minute,
 	}
