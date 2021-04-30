@@ -10,3 +10,30 @@ type Hotel struct {
 	Country string `json:"country"`
 	Price   int    `json:"price"`
 }
+
+type Hotels struct {
+	Hotels []Hotel
+}
+
+type ResponseModel struct {
+	ResponseCode int     `json:"rc"`
+	Message      string  `json:"message"`
+	Detail       string  `json:"detail"`
+	Data         []Hotel `json:"data"`
+}
+
+func ResponseSuccess(hotel []Hotel, detail string) ResponseModel {
+	var response ResponseModel
+	response.ResponseCode = 200
+	response.Message = "SUCCESS"
+	response.Detail = detail
+	response.Data = hotel
+	return response
+}
+func ResponseFailed(rc int, detail string) ResponseModel {
+	var response ResponseModel
+	response.ResponseCode = rc
+	response.Message = "FAILED"
+	response.Detail = detail
+	return response
+}

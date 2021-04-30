@@ -12,7 +12,6 @@ import (
 
 func main() {
 	e := echo.New()
-
 	e.Use(middleware.Recover())
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -23,7 +22,10 @@ func main() {
 	e.POST("/login", controllers.LoginController)
 	e.POST("/registration", controllers.Registration)
 	e.GET("/profil", controllers.ProfileHandler)
-	e.POST("/hotel",controllers.AddHotel)
+
+	e.POST("/hotel", controllers.AddHotel)
+	e.GET("/hotels", controllers.GetAllHotel)
+	e.DELETE("/hotel/:id", controllers.DeleteHotel)
 
 	s := &http.Server{
 		Addr:         ":1323",
