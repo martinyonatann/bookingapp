@@ -26,10 +26,8 @@ func main() {
 	e.POST("/registration", controllers.Registration)
 	e.GET("/profil", controllers.ProfileHandler)
 
-	// port= os.Getenv("PORT")
-
 	s := &http.Server{
-		Addr:         ":8080",
+		Addr:         ":1323",
 		ReadTimeout:  20 * time.Minute,
 		WriteTimeout: 20 * time.Minute,
 	}
@@ -38,6 +36,7 @@ func main() {
 func groupRouteHotel(e *echo.Group) {
 	hotel := e.Group("/hotel")
 	hotel.POST("", controllers.AddHotel)
+	hotel.POST("/update", controllers.UpdateHotel)
 	hotel.GET("", controllers.GetAllHotel)
 	hotel.DELETE("/:id", controllers.DeleteHotel)
 

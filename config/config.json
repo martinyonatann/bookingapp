@@ -1,8 +1,8 @@
 
 {
-        "host": "ec2-34-233-0-64.compute-1.amazonaws.com",
+        "host": "127.0.0.1",
         "port": "5432",
-        "user": "xfosxpebglbybu",
-        "password": "6a4780d49095467cbd8b038e6aca0573a70405e955ec5cd65e5b7516e13d2281",
-        "dbname": "d9uv0ddruhh4gl"
+        "user": "postgres",
+        "password": "password",
+        "dbname": "godatabase"
 }

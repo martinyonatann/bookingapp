@@ -1,1 +1,1 @@
-web: bookingapp
+web: bin/bookingapp

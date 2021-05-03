@@ -13,6 +13,7 @@ require (
 	github.com/lib/pq v1.10.1
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
+	github.com/sirupsen/logrus v1.8.1
 	github.com/swaggo/swag v1.7.0 // indirect
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
 	golang.org/x/net v0.0.0-20210428140749-89ef3d95e781 // indirect

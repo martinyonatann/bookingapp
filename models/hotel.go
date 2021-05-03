@@ -22,18 +22,18 @@ type ResponseModel struct {
 	Data         []Hotel `json:"data"`
 }
 
-func ResponseSuccess(hotel []Hotel, detail string) ResponseModel {
+func RespSuccess(hotel []Hotel, detail string) ResponseModel {
 	var response ResponseModel
 	response.ResponseCode = 200
-	response.Message = "SUCCESS"
+	response.Message = "Process Successfully"
 	response.Detail = detail
 	response.Data = hotel
 	return response
 }
-func ResponseFailed(rc int, detail string) ResponseModel {
+func RespFailed(rc int, detail string) ResponseModel {
 	var response ResponseModel
 	response.ResponseCode = rc
-	response.Message = "FAILED"
+	response.Message = "Process Failed"
 	response.Detail = detail
 	return response
 }
