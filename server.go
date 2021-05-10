@@ -44,6 +44,6 @@ func groupRouteHotel(e *echo.Group) {
 
 // func groupRouteBooking (e *echo.Group){
 // 	booking := e.Group("/booking")
-// 	booking.POST("", controllers)
+// 	booking.POST("", controllers.CreateBooking)
 
 // }
