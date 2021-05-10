@@ -1,7 +1,12 @@
 # API Specification BookingApp - Golang [Echo Framework]
 
 
-![alt text] (https://github.com/martinyonathann/bookingapp/blob/master/flowchart.png)
+![plot](https://github.com/martinyonathann/bookingapp/blob/master/flowchart.png)
+
+![plot](https://github.com/martinyonathann/bookingapp/blob/master/apiDesign.png)
+
+
+
 
 
 ## Authentication
